@@ -63,14 +63,16 @@ def isParalyLogging():
 
 def getHP(x, y):
 
+        while(True):
+            currentX, currentY = mousePosition()
+            data = get_row(x, y)
+            moveMouse(currentX, currentY)
+            ph_value = re.findall(r'\d+\.\d+',data)[0]
+            print(ph_value)
+            with open('ph_log.txt', 'w') as log:
+                log.write(str(ph_value) + '\n')
 
-    while(True):
-        currentX, currentY = mousePosition()
-        data = get_row(x, y)
-        moveMouse(currentX, currentY)
-        print(re.findall(r'\d+\.\d+',data)[0])
-        time.sleep(interval)
-
+time.sleep(interval)
 if __name__ == '__main__':
     preStartUp()
     startUp()
