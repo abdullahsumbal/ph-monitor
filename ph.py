@@ -1,24 +1,71 @@
+"""
+Import libraries
+"""
+import os
 import time
-from serial.tools import list_ports  # pyserial
+from ph_helper import *
 
-for item in list_ports.comports():
-    print item
 
-# def enumerate_serial_devices():
-#     return set([item for item in list_ports.comports()])
+# params
+interval = 1
 
-# def check_new_devices(old_devices):
-#     devices = enumerate_serial_devices()
-#     added = devices.difference(old_devices)
-#     removed = old_devices.difference(devices)
-#     if added:
-#         print 'added: {}'.format(added)
-#     if removed:
-#         print 'removed: {}'.format(removed)
-#     return devices
 
-# # Quick and dirty timing loop
-# old_devices = enumerate_serial_devices()
-# while True:
-#     old_devices = check_new_devices(old_devices)
-#     time.sleep(0.5)
+def preStartUp():
+    print("*****************************************************")
+    print("                     Pre-StartUp                     ")
+    print("*****************************************************\n")
+    # Clear up clipboard
+    SetClipboard('')
+    print("Pre-StartUp Done")
+
+
+def startUp():
+    print("*****************************************************")
+    print("                     StartUp                     ")
+    print("*****************************************************\n")
+    print("Please read the instructions before continuing")
+    print("1. Some instructions")
+    print("2. More instructions")
+    os.system('pause')
+    print("Starting Process . . . ")
+    time.sleep(5)
+
+def isParalyCentered():
+
+    goCenterOfScreen()
+    copy()
+    validateClipboard()
+
+def isParalyLogging():
+    goCenterOfScreen()
+    copy()
+    data = GetClipboardData()
+    time.sleep(interval + 0.1)
+    copy()
+    if data != GetClipboardData():
+        print("Paraly SW 112 is Logging")
+    else:
+        print("Error: Please make sure that paraly sw 112 is logging")
+        sys.exit()
+
+
+def isParalyRunning():
+    print("*****************************************************")
+    print("               Check Paraly SW 112                   ")
+    print("*****************************************************\n")
+    isParalyCentered()
+    isParalyLogging()
+# # Check if got the correct content
+# isBottom = False
+#
+#
+# print(data)
+# # while not isBottom:
+# #     pyautogui.press(['down'])
+# #     pyautogui.hotkey('ctrl', 'c')
+# #     time.sleep(5)
+if __name__ == '__main__':
+    preStartUp()
+    startUp()
+    isParalyRunning()
+>>>>>>> 31d0ea2dc51ca88a299d86dadc26d4db95c74521
