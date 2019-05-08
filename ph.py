@@ -24,48 +24,57 @@ def startUp():
     print("                     StartUp                     ")
     print("*****************************************************\n")
     print("Please read the instructions before continuing")
-    print("1. Some instructions")
-    print("2. More instructions")
+    print("1. After pressing enter, you will 10 seconds to perform the actions belows")
+    print("2. Start logging the paraly SW 112")
+    print("3. Place cursor on the bottom row on the ph value.")
+    print("4. Do not move the cursor or else the program will stop")
     os.system('pause')
     print("Starting Process . . . ")
-    time.sleep(5)
+    time.sleep(10)
 
-def isParalyCentered():
-
-    goCenterOfScreen()
+def get_row(x = None, y = None):
+    if x and y:
+        clickOnPosiiton(x, y)
+    else:
+        click()
     copy()
-    validateClipboard()
+    time.sleep(0.5)
+    data = validateClipboard()
+    return data
 
 def isParalyLogging():
-    goCenterOfScreen()
-    copy()
-    data = GetClipboardData()
-    time.sleep(interval + 0.1)
-    copy()
-    if data != GetClipboardData():
-        print("Paraly SW 112 is Logging")
+    print("*****************************************************")
+    print("               Check Cursor Position")
+    print("*****************************************************\n")
+    print("Check if Paraly SW 112 is logging . . . \n")
+    previous_row = get_row()
+    time.sleep(interval *2)
+    current_row = get_row()
+    if( current_row != previous_row):
+        print("Paraly SW 112 is logging\n")
+        return mousePosition()
     else:
-        print("Error: Please make sure that paraly sw 112 is logging")
+        print("Error: Looks like Paraly SW 112 is not logging.")
+        print("How to fix: ")
+        print("1. Please make sure mouse is placed on the ph value of the last row of the log.")
+        print("2. You must see the time incrementing")
         sys.exit()
 
 
-def isParalyRunning():
-    print("*****************************************************")
-    print("               Check Paraly SW 112                   ")
-    print("*****************************************************\n")
-    isParalyCentered()
-    isParalyLogging()
-# # Check if got the correct content
-# isBottom = False
-#
-#
-# print(data)
-# # while not isBottom:
-# #     pyautogui.press(['down'])
-# #     pyautogui.hotkey('ctrl', 'c')
-# #     time.sleep(5)
+def getHP(x, y):
+
+        while(True):
+            currentX, currentY = mousePosition()
+            data = get_row(x, y)
+            moveMouse(currentX, currentY)
+            ph_value = re.findall(r'\d+\.\d+',data)[0]
+            print(ph_value)
+            with open('ph_log.txt', 'w') as log:
+                log.write(str(ph_value) + '\n')
+
+time.sleep(interval)
 if __name__ == '__main__':
     preStartUp()
     startUp()
-    isParalyRunning()
->>>>>>> 31d0ea2dc51ca88a299d86dadc26d4db95c74521
+    x, y = isParalyLogging()
+    getHP(x, y)

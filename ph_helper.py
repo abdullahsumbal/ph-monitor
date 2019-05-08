@@ -1,47 +1,52 @@
 import re
 import sys
 import pyautogui
-import win32clipboard
+import pyperclip
 
+pyautogui.FAILSAFE = True
 ####################################################
 # mouse and keyboard automation function
 ####################################################
 
-def goCenterOfScreen():
-    # Go to the center of the screen
-    screenWidth, screenHeight = pyautogui.size()
 
-    # Mouse left click
-    pyautogui.click(screenWidth / 2, screenHeight / 2)
+def click():
+    pyautogui.click()
 
+
+def moveMouse(x, y):
+    pyautogui.moveTo(x, y)
+
+
+def clickOnPosiiton(x , y):
+    pyautogui.click(x , y)
 
 def copy():
     # Copy row (ctrl + c)
     pyautogui.hotkey('ctrl', 'c')
 
+
+def mousePosition():
+    return pyautogui.position()
+
 ####################################################
 # Clipboard helper function
 ####################################################
-def SetClipboard(data):
-    win32clipboard.OpenClipboard()
-    win32clipboard.SetClipboardText(data)
-    win32clipboard.CloseClipboard()
 
-def GetClipboardData():
-    win32clipboard.OpenClipboard()
-    data = win32clipboard.GetClipboardData()
-    win32clipboard.CloseClipboard()
-    return data
+
+def SetClipboard(data):
+    pyperclip.copy(data)
+
+
+def getClipboardData():
+    return pyperclip.paste()
+
 
 def validateClipboard():
-    clipboardData = GetClipboardData()
-    print ('Clipboard Data: {}'.format(clipboardData))
+    clipboardData = getClipboardData()
+    # print ('Clipboard Data: {}'.format(clipboardData))
     pattern = re.search(r'\d+/\d+/\d+\s*\d+:\d+:\d+\s*(PM{1}|AM{1})\s+\d+\.\d+', clipboardData)
-    win32clipboard.CloseClipboard()
     if pattern:
-        print("Paraly sw 112 is positioned correctly")
-        return pattern.group(0)
+        return clipboardData
     else:
-        print("Error: Please make sure the paraly sw 112 is logging in the center of the screen")
+        print("Error: Please make sure the Cursor is placed on a row of paraly sw 112")
         sys.exit()
-
