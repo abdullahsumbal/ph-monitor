@@ -3,6 +3,7 @@ import sys
 import pyautogui
 import pyperclip
 
+pyautogui.FAILSAFE = True
 ####################################################
 # mouse and keyboard automation function
 ####################################################
