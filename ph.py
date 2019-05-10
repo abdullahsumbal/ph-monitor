@@ -77,5 +77,4 @@ if __name__ == '__main__':
     preStartUp()
     startUp()
     x, y = isParalyLogging()
-
     getHP(x, y)
