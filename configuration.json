@@ -1,0 +1,4 @@
+{
+  "pumps": ["COM6"],
+  "ph_interval": 1
+}
