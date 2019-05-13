@@ -1,4 +1,4 @@
 {
-  "pumps": ["COM6"],
-  "ph_interval": 1
+  "pumps": ["COM3"],
+  "ph_read_interval": 1
 }

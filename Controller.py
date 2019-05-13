@@ -5,9 +5,13 @@ changes state, all its dependents are notified and updatedautomatically.
 
 import abc
 import ph
+import pump
 # TODO: create a looger
 import logging
 
+####################################################
+# Class Structure For subject and observer design pattern
+####################################################
 
 class Phmeter:
     """
@@ -51,6 +55,11 @@ class Pump(metaclass=abc.ABCMeta):
     def __init__(self):
         self._phmeter = None
         self._pump_state = None
+        self.ser = None
+
+    @abc.abstractmethod
+    def connect(self, port):
+        pass
 
     @abc.abstractmethod
     def update(self, arg):
@@ -64,34 +73,63 @@ class ConcretePump(Pump):
     Store state that should stay consistent with the phmeter's.
     """
 
+    def connect(self, port):
+        self.ser = pump.connectPump(port)
+
+        if self.ser.isOpen():
+            print("{} is open".format(port))
+        else:
+            print("Error {} is not open".format(port))
+
     def update(self, arg):
-        self._pump_state = arg
-        # ...
+        # currently arg is phValue
+        phValue = arg
+        self._pump_state = phValue
+        # do something when you get ph value
+        pump.sendCommand(self.ser, "TA2!", waitForOutput=True)
 
 
-def startup():
-    # subject
+def StartProces():
+    """
+        This function starts recording ph, connects to pump and send commands to pump
+    """
+
+    # Add Subject which is your ph meter (ph application)
     phmeter = Phmeter()
-    # listeners
-    concrete_pump_1 = ConcretePump()
-    concrete_pump_2 = ConcretePump()
-    phmeter.attach(concrete_pump_1)
-    phmeter.attach(concrete_pump_2)
+    # Observers/listeners which are your pumps
+    observers = []
+    ports = ["COM3"]
 
-    # Validate if ph application is running
+    # Initialize pumps observers
+    print("*****************************************************")
+    print("                 Pump: Connection                     ")
+    print("*****************************************************\n")
+    for port in ports:
+        concrete_pump = ConcretePump()
+        concrete_pump.connect(port)
+        observers.append(concrete_pump)
+
+    # Make pump(observer) listen to subject.
+    for observer in observers:
+        phmeter.attach(observer)
+
+
+    # Validate if ph application is running correctly.
     ph.preStartUp()
     ph.startUp()
     phValueLocationX, phValueLocationY = ph.isParalyLogging()
 
-    # get ph values
+    print("*****************************************************")
+    print("             Read PH and Command ")
+    print("*****************************************************\n")
+    # Pumps something according to the ph value.
     while True:
         # TODO: validate if getting the same time , that means mouse has been moved.
-
         phValue, rowData = ph.getHP(phValueLocationX, phValueLocationY)
         phmeter.phmeter_state = phValue
-        print("pump 1:", concrete_pump_1._pump_state)
-        print("pump 2:", concrete_pump_2._pump_state)
+        for observer in observers:
+            print("pump at port {}: {}".format(observer.ser.port, observer._pump_state))
 
 
 if __name__ == "__main__":
-    startup()
+    StartProces()

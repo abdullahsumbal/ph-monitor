@@ -2,25 +2,17 @@ import time
 import serial
 
 
-def connectPump(ports):
+def connectPump(port):
 
-    serialConnections = []
-
-    for port in ports:
-
-        # configure the serial connections (the parameters differs on the device you are connecting to)
-        ser = serial.Serial(
-            port=port,
-            baudrate=9600,
-            parity=serial.PARITY_NONE,
-            stopbits=serial.STOPBITS_ONE,
-            bytesize=serial.EIGHTBITS
-        )
-        ser.isOpen()
-        serialConnections.append(ser)
-
-    return serialConnections
-
+    # configure the serial connections (the parameters differs on the device you are connecting to)
+    ser = serial.Serial(
+        port=port,
+        baudrate=9600,
+        parity=serial.PARITY_NONE,
+        stopbits=serial.STOPBITS_ONE,
+        bytesize=serial.EIGHTBITS
+    )
+    return ser
 
 def sendCommand(ser, command, waitForOutput=True):
     # encode string
@@ -70,8 +62,8 @@ def serialConsole(ser):
 
 
 if __name__ == '__main__':
-    serialConnections = connectPump(['COM3'])
-    ser = serialConnections[0]
+    ser = connectPump('COM3')
+    print(ser.port)
     # send one command
     print(sendCommand(ser, "DSP?", waitForOutput=True))
     # start console

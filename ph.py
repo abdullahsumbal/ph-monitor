@@ -12,7 +12,7 @@ interval = 1
 
 def preStartUp():
     print("*****************************************************")
-    print("                     Pre-StartUp                     ")
+    print("                  PH: Pre-StartUp                     ")
     print("*****************************************************\n")
     # Clear up clipboard
     SetClipboard('')
@@ -21,7 +21,7 @@ def preStartUp():
 
 def startUp():
     print("*****************************************************")
-    print("                     StartUp                     ")
+    print("                   PH: StartUp                     ")
     print("*****************************************************\n")
     print("Please read the instructions before continuing")
     print("1. After pressing enter, you will 10 seconds to perform the actions belows")
@@ -44,7 +44,7 @@ def get_row(x = None, y = None):
 
 def isParalyLogging():
     print("*****************************************************")
-    print("               Check Cursor Position")
+    print("               PH: Check Cursor Position")
     print("*****************************************************\n")
     print("Check if Paraly SW 112 is logging . . . \n")
     previous_row = get_row()
