@@ -5,6 +5,8 @@ changes state, all its dependents are notified and updatedautomatically.
 
 import abc
 import ph
+# TODO: create a looger
+import logging
 
 
 class Phmeter:
@@ -79,25 +81,16 @@ def startup():
     # Validate if ph application is running
     ph.preStartUp()
     ph.startUp()
-    x, y = ph.isParalyLogging()
+    phValueLocationX, phValueLocationY = ph.isParalyLogging()
 
     # get ph values
-    while(True):
+    while True:
         # TODO: validate if getting the same time , that means mouse has been moved.
 
-        ph_value = ph.getHP(x, y)
-        phmeter.phmeter_state = ph_value
+        phValue, rowData = ph.getHP(phValueLocationX, phValueLocationY)
+        phmeter.phmeter_state = phValue
         print("pump 1:", concrete_pump_1._pump_state)
         print("pump 2:", concrete_pump_2._pump_state)
-
-
-def main():
-    phmeter = Phmeter()
-    concrete_pump = ConcretePump()
-    phmeter.attach(concrete_pump)
-    for i in range(10):
-        phmeter.phmeter_state = i
-        print(concrete_pump._pump_state)
 
 
 if __name__ == "__main__":

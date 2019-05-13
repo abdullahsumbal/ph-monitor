@@ -67,14 +67,14 @@ def getHP(phValueLocationX, phValueLocationY):
     currentX, currentY = mousePosition()
 
     # go to where the ph value is on the screen
-    data = get_row(phValueLocationX, phValueLocationY)
+    rowData = get_row(phValueLocationX, phValueLocationY)
 
     # reposition mouse to the current position
     moveMouse(currentX, currentY)
 
     # get ph value from data
-    ph_value = re.findall(r'\d+\.\d+',data)[0]
-    return ph_value, data
+    phValue = re.findall(r'\d+\.\d+', rowData)[0]
+    return phValue, rowData
 
 time.sleep(interval)
 if __name__ == '__main__':
