@@ -56,7 +56,13 @@ ph (which we created earlier). Or you can run it on the termnial using the follo
 python3 Controller.py
 ```
 
-When the program start it ask user to continue only when they are performed the steps on the screen.
+When the program start it ask user to continue only when they are performed the steps on the screen. So please follow the steps.
 
+
+Some to look for
+1. When the `Paraly SW 112` is logging, the row are the same. You need to scroll to the bottom to see the new values.
+2. Your COM port is not correct.
+3. Google things if you do not understand. 
 ## How to make changes.
-Email me.
+This program is very customized to specific need. The code is well coded and structured. It uses a observer design
+pattern. Email me if you want to make changes. Me? well I am Muhammad Abdullah Sumbal.
