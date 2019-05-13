@@ -1,6 +1,17 @@
 import time
 import serial
+import os
 
+def startUp():
+    print("*****************************************************")
+    print("                   PUMP: StartUp                     ")
+    print("*****************************************************\n")
+    print("Please read the instructions before continuing")
+    print("1. Make sure the port are correctly input in the config file.")
+    print("2. Initially, pump should be stopped (NOT TURNED OFF!). Read documentation if you do not understand")
+    os.system('pause')
+    print("Starting Process . . . ")
+    time.sleep(10)
 
 def connectPump(port):
 

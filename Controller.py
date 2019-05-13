@@ -6,6 +6,7 @@ changes state, all its dependents are notified and updatedautomatically.
 import abc
 import ph
 import pump
+import json
 # TODO: create a looger
 import logging
 
@@ -89,16 +90,20 @@ class ConcretePump(Pump):
         pump.sendCommand(self.ser, "TA2!", waitForOutput=True)
 
 
-def StartProces():
+def StartProces(config):
     """
         This function starts recording ph, connects to pump and send commands to pump
     """
+
+    # Validate pump
+    pump.startUp()
 
     # Add Subject which is your ph meter (ph application)
     phmeter = Phmeter()
     # Observers/listeners which are your pumps
     observers = []
-    ports = ["COM3"]
+    ports = config["pumps"]
+    phReadInterval = config["ph_read_interval"]
 
     # Initialize pumps observers
     print("*****************************************************")
@@ -113,11 +118,11 @@ def StartProces():
     for observer in observers:
         phmeter.attach(observer)
 
-
     # Validate if ph application is running correctly.
     ph.preStartUp()
     ph.startUp()
-    phValueLocationX, phValueLocationY = ph.isParalyLogging()
+    phValueLocationX, phValueLocationY = ph.isParalyLogging(interval=phReadInterval)
+
 
     print("*****************************************************")
     print("             Read PH and Command ")
@@ -128,8 +133,15 @@ def StartProces():
         phValue, rowData = ph.getHP(phValueLocationX, phValueLocationY)
         phmeter.phmeter_state = phValue
         for observer in observers:
-            print("pump at port {}: {}".format(observer.ser.port, observer._pump_state))
+            print("Pump at port {}: {}".format(observer.ser.port, observer._pump_state))
 
 
 if __name__ == "__main__":
-    StartProces()
+    # read config file
+    filename = "configuration.json"
+    if filename:
+        with open(filename, 'r') as f:
+            config = json.load(f)
+
+    # start process
+    StartProces(config)

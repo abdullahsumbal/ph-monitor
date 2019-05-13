@@ -6,10 +6,6 @@ import time
 from ph_helper import *
 
 
-# params
-interval = 1
-
-
 def preStartUp():
     print("*****************************************************")
     print("                  PH: Pre-StartUp                     ")
@@ -42,13 +38,13 @@ def get_row(x = None, y = None):
     data = validateClipboard()
     return data
 
-def isParalyLogging():
+def isParalyLogging(interval=10):
     print("*****************************************************")
     print("               PH: Check Cursor Position")
     print("*****************************************************\n")
     print("Check if Paraly SW 112 is logging . . . \n")
     previous_row = get_row()
-    time.sleep(interval *2)
+    time.sleep(interval * 2)
     current_row = get_row()
     if( current_row != previous_row):
         print("Paraly SW 112 is logging\n")
@@ -76,11 +72,10 @@ def getHP(phValueLocationX, phValueLocationY):
     phValue = re.findall(r'\d+\.\d+', rowData)[0]
     return phValue, rowData
 
-time.sleep(interval)
 if __name__ == '__main__':
     preStartUp()
     startUp()
-    phValueLocationX, phValueLocationY = isParalyLogging()
+    phValueLocationX, phValueLocationY = isParalyLogging(interval=1)
     while(True):
         print(getHP(phValueLocationX, phValueLocationY))
 
