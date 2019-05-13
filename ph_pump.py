@@ -4,6 +4,7 @@ changes state, all its dependents are notified and updatedautomatically.
 """
 
 import abc
+import ph
 
 
 class Phmeter:
@@ -39,7 +40,7 @@ class Phmeter:
         self._notify()
 
 
-class Observer(metaclass=abc.ABCMeta):
+class Pump(metaclass=abc.ABCMeta):
     """
     Define an updating interface for objects that should be notified of
     changes in a phmeter.
@@ -47,14 +48,14 @@ class Observer(metaclass=abc.ABCMeta):
 
     def __init__(self):
         self._phmeter = None
-        self._observer_state = None
+        self._pump_state = None
 
     @abc.abstractmethod
     def update(self, arg):
         pass
 
 
-class ConcreteObserver(Observer):
+class ConcretePump(Pump):
     """
     Implement the Observer updating interface to keep its state
     consistent with the phmeter's.
@@ -62,16 +63,42 @@ class ConcreteObserver(Observer):
     """
 
     def update(self, arg):
-        self._observer_state = arg
+        self._pump_state = arg
         # ...
+
+
+def startup():
+    # subject
+    phmeter = Phmeter()
+    # listeners
+    concrete_pump_1 = ConcretePump()
+    concrete_pump_2 = ConcretePump()
+    phmeter.attach(concrete_pump_1)
+    phmeter.attach(concrete_pump_2)
+
+    # Validate if ph application is running
+    ph.preStartUp()
+    ph.startUp()
+    x, y = ph.isParalyLogging()
+
+    # get ph values
+    while(True):
+        # TODO: validate if getting the same time , that means mouse has been moved.
+
+        ph_value = ph.getHP(x, y)
+        phmeter.phmeter_state = ph_value
+        print("pump 1:", concrete_pump_1._pump_state)
+        print("pump 2:", concrete_pump_2._pump_state)
 
 
 def main():
     phmeter = Phmeter()
-    concrete_observer = ConcreteObserver()
-    phmeter.attach(concrete_observer)
-    phmeter.phmeter_state = 123
+    concrete_pump = ConcretePump()
+    phmeter.attach(concrete_pump)
+    for i in range(10):
+        phmeter.phmeter_state = i
+        print(concrete_pump._pump_state)
 
 
 if __name__ == "__main__":
-    main()
+    startup()

@@ -61,20 +61,26 @@ def isParalyLogging():
         sys.exit()
 
 
-def getHP(x, y):
+def getHP(phValueLocationX, phValueLocationY):
 
-        while(True):
-            currentX, currentY = mousePosition()
-            data = get_row(x, y)
-            moveMouse(currentX, currentY)
-            ph_value = re.findall(r'\d+\.\d+',data)[0]
-            print(ph_value)
-            with open('ph_log.txt', 'w') as log:
-                log.write(str(ph_value) + '\n')
+    # get current mouse position
+    currentX, currentY = mousePosition()
+
+    # go to where the ph value is on the screen
+    data = get_row(phValueLocationX, phValueLocationY)
+
+    # reposition mouse to the current position
+    moveMouse(currentX, currentY)
+
+    # get ph value from data
+    ph_value = re.findall(r'\d+\.\d+',data)[0]
+    return ph_value, data
 
 time.sleep(interval)
 if __name__ == '__main__':
     preStartUp()
     startUp()
-    x, y = isParalyLogging()
-    getHP(x, y)
+    phValueLocationX, phValueLocationY = isParalyLogging()
+    while(True):
+        print(getHP(phValueLocationX, phValueLocationY))
+
