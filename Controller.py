@@ -35,7 +35,7 @@ class Phmeter:
 
     def _notify(self):
         for observer in self._observers:
-            observer.update(self._phmeter_state)
+            observer.phDependentUpdate(self._phmeter_state)
 
     @property
     def phmeter_state(self):
@@ -58,22 +58,6 @@ class Pump(metaclass=abc.ABCMeta):
         self._pump_state = None
         self.ser = None
 
-    @abc.abstractmethod
-    def connect(self, port):
-        pass
-
-    @abc.abstractmethod
-    def update(self, arg):
-        pass
-
-
-class ConcretePump(Pump):
-    """
-    Implement the Observer updating interface to keep its state
-    consistent with the phmeter's.
-    Store state that should stay consistent with the phmeter's.
-    """
-
     def connect(self, port):
         self.ser = pump.connectPump(port)
 
@@ -82,7 +66,19 @@ class ConcretePump(Pump):
         else:
             print("Error {} is not open".format(port))
 
-    def update(self, arg):
+    @abc.abstractmethod
+    def phDependentUpdate(self, arg):
+        pass
+
+
+class PhDependentPump(Pump):
+    """
+    Implement the Observer updating interface to keep its state
+    consistent with the phmeter's.
+    Store state that should stay consistent with the phmeter's.
+    """
+
+    def phDependentUpdate(self, arg):
         # currently arg is phValue
         phValue = arg
         self._pump_state = phValue
@@ -110,7 +106,7 @@ def StartProces(config):
     print("                 Pump: Connection                     ")
     print("*****************************************************\n")
     for port in ports:
-        concrete_pump = ConcretePump()
+        concrete_pump = PhDependentPump()
         concrete_pump.connect(port)
         observers.append(concrete_pump)
 
@@ -122,8 +118,6 @@ def StartProces(config):
     ph.preStartUp()
     ph.startUp()
     phValueLocationX, phValueLocationY = ph.isParalyLogging(interval=phReadInterval)
-
-
     print("*****************************************************")
     print("             Read PH and Command ")
     print("*****************************************************\n")
