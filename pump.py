@@ -11,7 +11,7 @@ def startUp():
     print("2. Initially, pump should be stopped (NOT TURNED OFF!). Read documentation if you do not understand")
     os.system('pause')
     print("Starting Process . . . ")
-    time.sleep(10)
+    time.sleep(1)
 
 def connectPump(port):
 
@@ -25,19 +25,23 @@ def connectPump(port):
     )
     return ser
 
-def sendCommand(ser, command, waitForOutput=True):
-    # encode string
-    commandEncoded = command.encode()
-    # write
-    ser.write(commandEncoded)
-    # wait for the output to return
-    if waitForOutput:
-        time.sleep(0.1)
-        output = ''
-        while ser.inWaiting() > 0:
-            output += ser.read(1).decode()
-        if output != '':
-            return output
+def sendCommand(ser, command, waitForOutput=True, tries=3):
+    # For debug
+    # return "OK\r\n"
+    # try sending the send three times.
+    for _ in range(tries):
+        # encode string
+        commandEncoded = command.encode()
+        # write
+        ser.write(commandEncoded)
+        # wait for the output to return
+        if waitForOutput:
+            time.sleep(0.1)
+            output = ''
+            while ser.inWaiting() > 0:
+                output += ser.read(1).decode()
+            if output != '':
+                return output
     return None
 
 def serialConsole(ser):
