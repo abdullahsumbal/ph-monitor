@@ -44,6 +44,63 @@ def sendCommand(ser, command, waitForOutput=True, tries=3):
                 return output
     return None
 
+
+def setFlowRate(ser, flow_rate, waitForOutput=True, tries=2):
+    try_count = 0
+    while try_count <= tries:
+        # change . to ,
+        fowRateEURO = str(round(float(flow_rate), 1)).replace('.', ',')
+        while len(fowRateEURO) != 5:
+            fowRateEURO = '0' + fowRateEURO
+        output = sendCommand(ser, "SMM=" + fowRateEURO + "!", waitForOutput=waitForOutput)
+        valid = validate_output(output)
+        if valid:
+            return valid
+        try_count += 1
+
+    if try_count > tries:
+        return False
+
+
+def togglePump(ser, waitForOutput=True, tries=2):
+    try_count = 0
+    while try_count <= tries:
+        output = sendCommand(ser, "TA2!", waitForOutput=waitForOutput)
+        valid = validate_output(output)
+        if valid:
+            return valid
+        try_count += 1
+
+    if try_count > tries:
+        return False
+
+
+def validate_output(output):
+    if output is not None:
+        print("Output from pump:", output.strip())
+        if output == "OK\r\n":
+            print("Successfully send command\n")
+            return True
+        else:
+            print("Failed to send command\n")
+            return False
+    else:
+        print("Error: no output from pump. possibly the rs232 got disconnected.")
+
+
+def getDesiredFlowRate(elapsedTime, flowRates, timeList):
+    indexTime = 0
+    if elapsedTime > timeList[-1]:
+        indexTime = -1
+    else:
+        for index, pointInTime in enumerate(timeList):
+
+            if elapsedTime < pointInTime:
+                indexTime = index - 1
+                break
+
+    return flowRates[indexTime]
+
 def serialConsole(ser):
     #ser.open()
     print('Enter your commands below.\r\nInsert "exit" to leave the application.')
@@ -77,7 +134,7 @@ def serialConsole(ser):
 
 
 if __name__ == '__main__':
-    ser = connectPump('COM4')
+    ser = connectPump('COM3')
     print(ser.port)
     # send one command
     print(sendCommand(ser, "DSP?", waitForOutput=True))

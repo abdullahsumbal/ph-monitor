@@ -9,6 +9,8 @@ import pump
 import json
 import sys
 import time
+import numpy as np
+from serial import SerialException
 # TODO: create a looger
 import logging
 
@@ -85,6 +87,21 @@ class PhDependentPump(Pump):
     consistent with the phmeter's.
     Store state that should stay consistent with the phmeter's.
     """
+    def set_flow_rate(self, flow_rate):
+        # initialize flow to for ph
+        waitForOutput = True
+        temp = str(round(float(flow_rate), 1)).replace('.', ',')
+        while (len(temp) != 5):
+            temp = '0' + temp
+        output = pump.sendCommand(self.ser, "SMM=" + temp + "!", waitForOutput=waitForOutput)
+        print("PH pump initial flow set to {}".format(temp))
+        if waitForOutput and output != "":
+            print("Output from pump:", output.strip())
+            if output == "OK\r\n":
+                print("Successfully send command\n")
+            else:
+                print("Failed to send command\n")
+
 
     def phDependentUpdate(self, arg):
         # currently arg is phValue
@@ -132,8 +149,20 @@ class TimeDependentPump(Pump):
         self.isOn = False
         self.preFlow = None
         self.port = pumpData["PORT"]
-        self.timeList = pumpData["TIME"]
-        self.flowRates = pumpData["FLOW_RATES"]
+        self.time_flow_rate = np.array(pumpData["TIME_FLOW_RATES"])
+        self.timeList = self.time_flow_rate[:, 0].tolist()
+        self.flowRates = self.time_flow_rate[:, 1].tolist()
+        self.minFLowRate = pumpData["MIN_FLOW"]
+        self.maxFlowRate = pumpData["MAX_FLOW"]
+
+        # min_flow helper variables
+        self.low_flow_mode = False
+        self.is_flow_min_rate_set = False
+        self.min_flow_toggle_on = True
+        self.min_flow_toggle_time = 0
+
+        self.print_time = 0
+
 
     def phDependentUpdate(self, arg):
         pass
@@ -142,51 +171,70 @@ class TimeDependentPump(Pump):
         return len(self.timeList) != len(self.flowRates)
 
     def timeDependentUpdate(self, elapsedTime):
+        waitForOutput = True
 
-        indexTime = 0
-        commandWasSend = False
-        output = ''
-        waitForOutput = True  # Maybe: this could be added in config
-        if elapsedTime > self.timeList[-1]:
-            indexTime = -1
-        else:
-            for index, pointInTime in enumerate(self.timeList):
+        # the desired flow rate
+        desiredFlowRate = pump.getDesiredFlowRate(elapsedTime, self.flowRates, self.timeList)
 
-                if elapsedTime < pointInTime:
-                    indexTime = index - 1
-                    break
-
-        desiredFlowRate = self.flowRates[indexTime]
-
-        # get flow value
-        # TODO: validate flow
+        # dont do anything if the previous flow rate and desired fow rate is the same
         if self.preFlow == desiredFlowRate:
-            # print("already the correct flow rate")
+            if self.print_time < elapsedTime:
+                self.print_time += 2
+                print("{} | Flow Rate: {} | Elapsed Time: {} | Pump state: {} \n".format(self.port, desiredFlowRate,
+                                                                                         elapsedTime, self.isOn))
+                # print(self.low_flow_mode, self.min_flow_toggle_on, self.min_flow_toggle_time,"\n")
+
+
+            if self.low_flow_mode:
+
+                # if the flow rate is below minimum then toggle between on and off.
+                if self.min_flow_toggle_time < elapsedTime:
+                    self.min_flow_toggle_time = elapsedTime + 10
+                    self.min_flow_toggle_on = not self.min_flow_toggle_on
+
+                if self.min_flow_toggle_on:
+                    if not self.isOn:
+                        print("{} | Turn on Pump".format(self.port))
+                        is_successful = pump.togglePump(self.ser)
+                        if is_successful:
+                            self.isOn = not self.isOn
+
+                    # set pump set flow rate to min
+                    if not self.is_flow_min_rate_set:
+                        print("{} | Set Flow Rate: {}".format(self.port, self.minFLowRate + 1))
+                        pump.setFlowRate(self.ser, self.minFLowRate + 1)
+                        self.is_flow_min_rate_set = True
+
+                else:
+                    if self.isOn:
+                        print("{} | Turn off Pump".format(self.port))
+                        is_successful = pump.togglePump(self.ser)
+                        if is_successful:
+                            self.isOn = not self.isOn
+                    self.is_flow_min_rate_set = False
             return
 
-        if desiredFlowRate == 0:
-            if self.isOn: # turn off pump is flow rate is 0
-                output = pump.sendCommand(self.ser, "TA2!", waitForOutput=waitForOutput)
-                commandWasSend = True
-                self.isOn = not self.isOn
+        # flow rate is below min flow rate
+        if desiredFlowRate <= self.minFLowRate:
+            self.low_flow_mode = True
+            self.min_flow_toggle_time = elapsedTime + 10
+            # if self.isOn:
+            #     print("{} | Turn off Pump".format(self.port))
+            #     is_successful = pump.togglePump(self.ser)
+            #     if is_successful:
+            #         self.isOn = not self.isOn
+        # flow rate is above in min flow rate
         else:
-            temp = str(round(float(desiredFlowRate),1)).replace('.',',')
-            while(len(temp) != 5):
-                temp = '0' + temp
-            print(temp)
+            self.low_flow_mode = False
+            # trun on pump is off
             if not self.isOn:
-                output = pump.sendCommand(self.ser, "TA2!", waitForOutput=waitForOutput)
-                self.isOn = not self.isOn
-            output = pump.sendCommand(self.ser, "SMM="+temp+"!", waitForOutput=waitForOutput)
-            commandWasSend = True
-
-        print("{} | Flow Rate: {} | Elapsed Time: {} | Pump state: {} | Command send: {}".format(self.port, desiredFlowRate, elapsedTime, self.isOn, commandWasSend))
-        if waitForOutput and output != "":
-            print("Output from pump:", output.strip())
-            if output == "OK\r\n":
-                print("Successfully send command\n")
-            else:
-                print("Failed to send command\n")
+                print("{} | Turn on Pump".format(self.port))
+                is_successful = pump.togglePump(self.ser)
+                if is_successful:
+                    self.isOn = not self.isOn
+            # set pump set flow rate
+            print("{} | Set Flow Rate: {}".format(self.port, min(desiredFlowRate, self.maxFlowRate)))
+            pump.setFlowRate(self.ser, min(desiredFlowRate, self.maxFlowRate))
 
         self.preFlow = desiredFlowRate
 
@@ -200,13 +248,16 @@ def StartProces(config):
     phData = config["PH_METERS"]
     phReadInterval = phData["PH_LOG_INTERVAL"]
 
-
     # pump data from configuration file
     pumpsData = config["PUMPS"]
     phDependentPumpsIgnore = pumpsData["PH_DEPENDENT_IGNORE"]
     timeDependentPumpsIgnore = pumpsData["TIME_DEPENDENT_IGNORE"]
     phDependentPumpsData = pumpsData['PH_DEPENDENT']
     timeDependentPumpsData = pumpsData['TIME_DEPENDENT']
+
+    if phDependentPumpsIgnore and timeDependentPumpsIgnore:
+        print("Error: Both pumps are ignored. At least one should be not ignored")
+        sys.exit()
 
     # Validate pump
     pump.startUp()
@@ -222,9 +273,15 @@ def StartProces(config):
         ph_observers = []
 
         for pumpData in phDependentPumpsData:
-            concrete_pump = PhDependentPump(pumpData)
-            concrete_pump.connect()
-            ph_observers.append(concrete_pump)
+            try:
+                concrete_pump = PhDependentPump(pumpData)
+                concrete_pump.connect()
+                concrete_pump.set_flow_rate(pumpData["FLOW_RATE"])
+                ph_observers.append(concrete_pump)
+            except SerialException:
+                print("Error: Connection refused. PUMP {} not found".format(pumpData["PORT"]))
+                sys.exit()
+
 
         # Make pump(observer) listen to subject (ph meter).
         for observer in ph_observers:
@@ -233,13 +290,17 @@ def StartProces(config):
     if not timeDependentPumpsIgnore:
         time_observers = []
         for pumpData in timeDependentPumpsData:
-            # TODO: validate config
-            concrete_pump = TimeDependentPump(pumpData)
-            if concrete_pump.validateConfig():
-                print("Error: Configuration Incorrect. Length of flow rate and time does not match")
+            try:
+                # TODO: validate config
+                concrete_pump = TimeDependentPump(pumpData)
+                if concrete_pump.validateConfig():
+                    print("Error: Configuration Incorrect. Length of flow rate and time does not match")
+                    sys.exit()
+                concrete_pump.connect()
+                time_observers.append(concrete_pump)
+            except SerialException:
+                print("Error: Connection refused. PUMP {} not found".format(pumpData["PORT"]))
                 sys.exit()
-            concrete_pump.connect()
-            time_observers.append(concrete_pump)
 
     # Validate if ph application is running correctly.
     if not phDependentPumpsIgnore:
