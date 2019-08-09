@@ -130,6 +130,7 @@ class TimeDependentPump(Pump):
     """
     def __init__(self, pumpData):
         self.isOn = False
+        self.preFlow = None
         self.port = pumpData["PORT"]
         self.timeList = pumpData["TIME"]
         self.flowRates = pumpData["FLOW_RATES"]
@@ -157,6 +158,12 @@ class TimeDependentPump(Pump):
 
         desiredFlowRate = self.flowRates[indexTime]
 
+        # get flow value
+        # TODO: validate flow
+        if self.preFlow == desiredFlowRate:
+            # print("already the correct flow rate")
+            return
+
         if desiredFlowRate == 0:
             if self.isOn: # turn off pump is flow rate is 0
                 output = pump.sendCommand(self.ser, "TA2!", waitForOutput=waitForOutput)
@@ -180,6 +187,8 @@ class TimeDependentPump(Pump):
                 print("Successfully send command\n")
             else:
                 print("Failed to send command\n")
+
+        self.preFlow = desiredFlowRate
 
 
 def StartProces(config):
@@ -248,7 +257,6 @@ def StartProces(config):
             phMeterValue, rowData = ph.getHP(phValueLocationX, phValueLocationY)
             phmeter.phmeter_state = phMeterValue # updating this value notifies the observer
         if not timeDependentPumpsIgnore:
-            time.sleep(3)
             elapsed_time = time.time() - start_time
             for time_observer in time_observers:
                 time_observer.timeDependentUpdate(elapsed_time)

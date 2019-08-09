@@ -77,7 +77,7 @@ def serialConsole(ser):
 
 
 if __name__ == '__main__':
-    ser = connectPump('COM3')
+    ser = connectPump('COM4')
     print(ser.port)
     # send one command
     print(sendCommand(ser, "DSP?", waitForOutput=True))
