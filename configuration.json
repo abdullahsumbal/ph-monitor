@@ -2,21 +2,19 @@
   "PUMPS": {
     "PH_DEPENDENT": [{"PORT": "COM4", "TARGET_PH": 6.875, "MARGIN": 0.1,"ACIDIC": false, "FLOW_RATE": 1.5}],
     "TIME_DEPENDENT": [
-      {"PORT":  "COM5", "MIN_FLOW": 0.4, "MAX_FLOW": 7.2, "TIME_FLOW_RATES":
+      {"PORT":  "COM5", "MIN_FLOW": 0.4, "MAX_FLOW": 7.1, "TIME_FLOW_RATES":
       [
-        [0, 0.3]
+        [0, 0],
+        [30, 4.44],
+        [35, 0.11]
 
       ]
       },
-      {"PORT":  "COM6", "MIN_FLOW": 0.4, "MAX_FLOW": 7.2, "TIME_FLOW_RATES":
+      {"PORT":  "COM6", "MIN_FLOW": 0.4, "MAX_FLOW": 7.1, "TIME_FLOW_RATES":
       [
-        [0, 0.3]
-      ]
-      },
-      {"PORT":  "COM4", "MIN_FLOW": 26.7, "MAX_FLOW": 100, "TIME_FLOW_RATES":
-      [
-        [0, 400],
-        [10, 20]
+        [0, 0.3],
+        [10, 4.3],
+        [20, 1.1]
       ]
       }
 

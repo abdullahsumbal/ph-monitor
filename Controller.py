@@ -218,8 +218,14 @@ class TimeDependentPump(Pump):
                     self.is_flow_min_rate_set = False
             return
 
-        # flow rate is below min flow rate
-        if desiredFlowRate <= self.minFLowRate:
+        # turn off pump if flow rate is 0
+        if desiredFlowRate == 0:
+            if self.isOn:
+                print("{} | Turn off Pump".format(self.port))
+                is_successful = pump.togglePump(self.ser)
+                if is_successful:
+                    self.isOn = not self.isOn
+        elif desiredFlowRate <= self.minFLowRate:
             self.low_flow_mode = True
             self.min_flow_toggle_time = elapsedTime + 10
             # if self.isOn:
