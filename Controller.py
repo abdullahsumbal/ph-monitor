@@ -186,7 +186,6 @@ class TimeDependentPump(Pump):
 
 
             if self.low_flow_mode:
-
                 # if the flow rate is below minimum then toggle between on and off.
                 if self.min_flow_toggle_time < elapsedTime:
                     # self.min_flow_toggle_time = elapsedTime + 10
