@@ -15,7 +15,7 @@ device should atomically connect. Click on the start button to start logging ph.
  
 Note: this project is not maintained. If the link does not work, just google `Knick Protavo 904`.
 ## `Hei_FLOW Precision 01` pump setup
-Computer talks to pump using RS232 connect. No Other set up required.
+Computer talks to pump using RS232 connection. No Other set up required.
 
 ## Program Prerequisites for (our code)
 ### Install Anaconda
@@ -37,12 +37,14 @@ conda activate ph
 ```buildoutcfg
 conda install -c conda-forge pyautogui pyperclip
 conda install -c anaconda pyserial 
+conda isntall numpy
+
 ```
 
 ## Before running Program
 Please follow the following steps before running the program.
 1. Make sure `Paraly SW 112` is running and logging in the background
-2. Make sure the log interval and the `ph_read_interval` variable value inside the  inside the `configuration.json` file matches. 
+2. Make sure the log interval and the `ph_read_interval` variable value is inside the `configuration.json` file matches. 
 `configuration.json` file is in the root directory of this project. You can add multiple COM ports if you have more pumps.
 3. Pump is stopped (Not turned off).
 4. Go inside Device Manager and under Ports(COM & LPT) you will find COM`X` (where `X` is a number) for the pump.
@@ -56,15 +58,15 @@ ph (which we created earlier). Or you can run it on the terminal using the follo
 python3 Controller.py
 ```
 
-When the program start it ask user to continue only when they are performed the steps on the screen. So please follow the steps.
+When the program start it asks user to continue only when they have performed the steps on the screen. So please follow the steps.
 
 
-Some to look for
+Some things to look for
 1. When the `Paraly SW 112` is logging, the row are the same. You need to scroll to the bottom to see the new values.
 2. Your COM port is not correct.
 3. Google things if you do not understand. 
 4. It talks to `Paraly SW 112` in every hacky way. The program take controls of your mouse  and 
 copies (Ctrl + C) the logging row from the `Paraly SW 112`.
 ## How to make changes.
-This program is very customized to specific need. The code is well coded and structured. It uses a observer design
-pattern. Email me if you want to make changes. Me? well I am Muhammad Abdullah Sumbal.
+This program is very customized to specific need. The code is well commented and structured. It uses a observer design
+pattern. Email me if you want to make changes: muhammad.sumbal@mail.mcgill.ca
