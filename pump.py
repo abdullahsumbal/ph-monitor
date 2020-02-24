@@ -36,12 +36,18 @@ def sendCommand(ser, command, waitForOutput=True, tries=3):
         ser.write(commandEncoded)
         # wait for the output to return
         if waitForOutput:
-            time.sleep(0.1)
-            output = ''
-            while ser.inWaiting() > 0:
-                output += ser.read(1).decode()
-            if output != '':
-                return output
+            # change made to how ouptut is read,
+            # decoding the bytes was causing errors.
+            # because the output from the pump was sending random bytes.
+            # time.sleep(0.1)
+            # output = ''
+            # while ser.inWaiting() > 0:
+            #     output += ser.read(1).decode()
+            # if output != '':
+            #     return output
+            time.sleep(1)
+            return ser.readline()
+
     return None
 
 
@@ -76,16 +82,20 @@ def togglePump(ser, waitForOutput=True, tries=2):
 
 
 def validate_output(output):
-    if output is not None:
-        print("Output from pump:", output.strip())
-        if output == "OK\r\n":
-            print("Successfully send command\n")
-            return True
-        else:
-            print("Failed to send command\n")
-            return False
-    else:
-        print("Error: no output from pump. possibly the rs232 got disconnected.")
+    print("Output from pump:", output.strip())
+    return True
+    # always validate true because the response from the pump is unpredictable.
+    # we are assuming that the the command is always correct and the pump responds to it.
+    # if output is not None:
+    #     print("Output from pump:", output.strip())
+    #     if output == "OK\r\n":
+    #         print("Successfully send command\n")
+    #         return True
+    #     else:
+    #         print("Failed to send command\n")
+    #         return False
+    # else:
+    #     print("Error: no output from pump. possibly the rs232 got disconnected.")
 
 
 def getDesiredFlowRate(elapsedTime, flowRates, timeList):
@@ -134,9 +144,10 @@ def serialConsole(ser):
 
 
 if __name__ == '__main__':
-    ser = connectPump('COM3')
+    ser = connectPump('COM4')
     print(ser.port)
     # send one command
     print(sendCommand(ser, "DSP?", waitForOutput=True))
+    togglePump(ser)
     # start console
-    serialConsole(ser)
+    # serialConsole(ser)
